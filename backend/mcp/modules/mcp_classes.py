@@ -22,7 +22,7 @@ file_log = logger  # Alias for backward compatibility
 log = logger  # Alias for backward compatibility
 
 
-class AidaMCPService:
+class NemesisMCPService:
     """Nemesis MCP service with backend integration and container management"""
 
     @staticmethod

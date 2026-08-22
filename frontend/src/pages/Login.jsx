@@ -1,5 +1,5 @@
-/**
- * Login page — username/password only. No public registration.
+﻿/**
+ * Login page â€” username/password only. No public registration.
  */
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
@@ -30,11 +30,11 @@ export default function Login() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <img
-            src="/assets/aida-logo.png"
-            alt="AIDA Logo"
+            src="/assets/nemesis-logo.png"
+            alt="NEMESIS Logo"
             className="w-16 h-16 mx-auto mb-4 object-contain"
           />
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">AIDA</h1>
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">NEMESIS</h1>
           <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
             AI-Driven Security Assessment
           </p>

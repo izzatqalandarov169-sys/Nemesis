@@ -85,7 +85,7 @@ const CardsTable = ({ cards, assessmentId, onUpdate, hideAddButton = false, exte
     }
 
     lines.push('---');
-    lines.push(`*Exported from AIDA on ${new Date().toISOString().split('T')[0]}*`);
+    lines.push(`*Exported from NEMESIS on ${new Date().toISOString().split('T')[0]}*`);
 
     navigator.clipboard.writeText(lines.join('\n')).then(() => {
       setCopiedCardId(card.id);

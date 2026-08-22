@@ -59,7 +59,7 @@ try:
     sys.path.insert(0, str(Path(__file__).parent / "modules"))
     sys.path.insert(0, str(Path(__file__).parent))
 
-    from mcp_classes import AidaMCPService
+    from mcp_classes import NemesisMCPService
     from server_builder import build_mcp_server
 
 except Exception as e:
@@ -70,7 +70,7 @@ except Exception as e:
     sys.exit(1)
 
 # Initialize MCP service and build the transport-agnostic server
-mcp_service = AidaMCPService()
+mcp_service = NemesisMCPService()
 server = build_mcp_server(mcp_service)
 
 

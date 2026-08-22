@@ -34,7 +34,7 @@ for _p in (str(_MODULES_DIR), str(_MCP_DIR)):
 from mcp.server.streamable_http_manager import StreamableHTTPSessionManager  # noqa: E402
 from starlette.responses import Response  # noqa: E402
 
-from mcp_classes import AidaMCPService  # noqa: E402
+from mcp_classes import NemesisMCPService  # noqa: E402
 from server_builder import build_mcp_server  # noqa: E402
 
 
@@ -51,7 +51,7 @@ class _AlreadySentResponse(Response):
         return None
 
 
-_mcp_service: AidaMCPService | None = None
+_mcp_service: NemesisMCPService | None = None
 _session_manager: StreamableHTTPSessionManager | None = None
 
 
@@ -64,7 +64,7 @@ def get_session_manager() -> StreamableHTTPSessionManager:
     if _session_manager is not None:
         return _session_manager
 
-    _mcp_service = AidaMCPService()
+    _mcp_service = NemesisMCPService()
     server = build_mcp_server(_mcp_service)
     # Stateful mode — the manager issues an ``Mcp-Session-Id`` on initialize
     # and clients (OpenWebUI, Claude Desktop, Cursor) echo it on subsequent

@@ -4,11 +4,19 @@ Nemesis CLI Launcher - Professional Python Implementation
 AI-Driven Security Assessment - Intelligent wrapper for Claude Code, Kimi CLI & Qwen Code
 """
 import os
+import shutil
 import sys
 import json
 import subprocess
 from pathlib import Path
 from typing import Optional, Literal
+
+
+def venv_python_path(venv_dir: Path) -> Path:
+    """Platform-aware path to the Python interpreter inside a venv"""
+    if os.name == "nt":
+        return venv_dir / "Scripts" / "python.exe"
+    return venv_dir / "bin" / "python"
 
 
 def ensure_cli_dependencies():
@@ -27,45 +35,45 @@ def ensure_cli_dependencies():
         pass  # Need to install
     
     # Try to use venv if it exists
-    python_bin = "python3"
+    python_bin = sys.executable
     if VENV_DIR.exists():
-        venv_python = VENV_DIR / "bin" / "python"
+        venv_python = venv_python_path(VENV_DIR)
         if venv_python.exists():
             python_bin = str(venv_python)
-    
-    print("🔧 Installing CLI dependencies...", file=sys.stderr)
-    
+
+    print(" Installing CLI dependencies...", file=sys.stderr)
+
     # Create venv if it doesn't exist
     if not VENV_DIR.exists():
-        print(f"📦 Creating virtual environment at {VENV_DIR}...", file=sys.stderr)
+        print(f" Creating virtual environment at {VENV_DIR}...", file=sys.stderr)
         try:
             subprocess.run([sys.executable, "-m", "venv", str(VENV_DIR)], check=True, capture_output=True)
         except subprocess.CalledProcessError as e:
-            print(f"❌ Failed to create venv: {e}", file=sys.stderr)
-            print("💡 Install dependencies manually: pip install -r requirements.txt", file=sys.stderr)
+            print(f" Failed to create venv: {e}", file=sys.stderr)
+            print(" Install dependencies manually: pip install -r requirements.txt", file=sys.stderr)
             sys.exit(1)
-        
+
         # Update python_bin to use new venv
-        python_bin = str(VENV_DIR / "bin" / "python")
+        python_bin = str(venv_python_path(VENV_DIR))
     
     # Install dependencies
     if REQUIREMENTS_FILE.exists():
-        print(f"📥 Installing from {REQUIREMENTS_FILE.name}...", file=sys.stderr)
+        print(f" Installing from {REQUIREMENTS_FILE.name}...", file=sys.stderr)
         try:
             subprocess.run(
                 [python_bin, "-m", "pip", "install", "--quiet", "-r", str(REQUIREMENTS_FILE)],
                 check=True,
                 capture_output=True
             )
-            print("✅ Dependencies installed successfully", file=sys.stderr)
+            print(" Dependencies installed successfully", file=sys.stderr)
         except subprocess.CalledProcessError as e:
-            print(f"❌ Failed to install dependencies: {e}", file=sys.stderr)
-            print("💡 Try manually: pip install click httpx rich", file=sys.stderr)
+            print(f" Failed to install dependencies: {e}", file=sys.stderr)
+            print(" Try manually: pip install click httpx rich", file=sys.stderr)
             sys.exit(1)
     
     # If we installed in venv, we need to re-execute with that Python
     if python_bin != sys.executable and VENV_DIR.exists():
-        venv_python = VENV_DIR / "bin" / "python"
+        venv_python = venv_python_path(VENV_DIR)
         if venv_python.exists():
             # Re-execute this script with the venv Python
             os.execv(str(venv_python), [str(venv_python)] + sys.argv)
@@ -116,7 +124,7 @@ def ensure_backend_venv(quiet=False) -> Path:
     # Check if venv exists
     if not venv_dir.exists():
         if not quiet:
-            console.print("[yellow]⚠ Backend venv not found, creating...[/yellow]")
+            console.print("[yellow] Backend venv not found, creating...[/yellow]")
         
         try:
             subprocess.run(
@@ -125,14 +133,14 @@ def ensure_backend_venv(quiet=False) -> Path:
                 capture_output=True
             )
             if not quiet:
-                console.print("[green]✓ Created backend venv[/green]")
+                console.print("[green] Created backend venv[/green]")
         except subprocess.CalledProcessError as e:
             if not quiet:
-                console.print(f"[red]✗ Failed to create backend venv: {e}[/red]")
+                console.print(f"[red] Failed to create backend venv: {e}[/red]")
             raise
     
     # Install backend dependencies if requirements.txt exists
-    python_bin = venv_dir / "bin" / "python"
+    python_bin = venv_python_path(venv_dir)
     if requirements_file.exists():
         # Check if MCP is installed
         try:
@@ -155,23 +163,23 @@ def ensure_backend_venv(quiet=False) -> Path:
                         timeout=120
                     )
                     if not quiet:
-                        console.print("[green]✓ Backend dependencies installed[/green]")
+                        console.print("[green] Backend dependencies installed[/green]")
                 except subprocess.CalledProcessError as e:
                     if not quiet:
-                        console.print(f"[yellow]⚠ Could not install backend dependencies[/yellow]")
+                        console.print(f"[yellow] Could not install backend dependencies[/yellow]")
                         if e.stderr and not quiet:
                             # Show the actual error from pip
                             console.print(f"[dim]Error details:[/dim]")
                             for line in e.stderr.strip().split('\n')[-5:]:  # Last 5 lines
                                 console.print(f"[dim]  {line}[/dim]")
-                        console.print("[yellow]→ MCP server may not work. Install manually if needed:[/yellow]")
+                        console.print("[yellow] MCP server may not work. Install manually if needed:[/yellow]")
                         console.print(f"[dim]  cd {backend_dir} && source venv/bin/activate && pip install -r requirements.txt[/dim]")
                 except subprocess.TimeoutExpired:
                     if not quiet:
-                        console.print("[yellow]⚠ Backend dependency installation timed out[/yellow]")
+                        console.print("[yellow] Backend dependency installation timed out[/yellow]")
         except Exception as e:
             if not quiet:
-                console.print(f"[yellow]⚠ Could not verify MCP installation: {e}[/yellow]")
+                console.print(f"[yellow] Could not verify MCP installation: {e}[/yellow]")
     
     return python_bin
 
@@ -209,9 +217,9 @@ def generate_mcp_config(db_url: str, token: str = "", quiet=False) -> None:
         python_bin_str = str(python_bin.absolute())
     except Exception as e:
         if not quiet:
-            console.print(f"[red]✗ Could not setup backend venv: {e}[/red]")
+            console.print(f"[red] Could not setup backend venv: {e}[/red]")
             console.print("[yellow]Falling back to system Python[/yellow]")
-        python_bin_str = "python3"
+        python_bin_str = sys.executable
     
     config = {
         "mcpServers": {
@@ -228,10 +236,10 @@ def generate_mcp_config(db_url: str, token: str = "", quiet=False) -> None:
     }
     
     MCP_CONFIG_FILE.write_text(json.dumps(config, indent=2))
-    # Token is embedded in plaintext — restrict to owner only.
+    # Token is embedded in plaintext  restrict to owner only.
     MCP_CONFIG_FILE.chmod(0o600)
     if not quiet:
-        console.print(f"[dim]✓ MCP config: {MCP_CONFIG_FILE.name}[/dim]")
+        console.print(f"[dim] MCP config: {MCP_CONFIG_FILE.name}[/dim]")
         console.print(f"[dim]  Python: {python_bin_str}[/dim]")
 
 
@@ -249,7 +257,7 @@ def generate_mcp_http_config(url: str, api_key: str, quiet=False) -> None:
     MCP_CONFIG_FILE.write_text(json.dumps(config, indent=2))
     MCP_CONFIG_FILE.chmod(0o600)
     if not quiet:
-        console.print(f"[dim]✓ MCP config (HTTP): {MCP_CONFIG_FILE.name}[/dim]")
+        console.print(f"[dim] MCP config (HTTP): {MCP_CONFIG_FILE.name}[/dim]")
         console.print(f"[dim]  Endpoint: {url}[/dim]")
 
 
@@ -289,7 +297,7 @@ agent:
     KIMI_AGENT_FILE.write_text(agent_yaml)
     
     if not quiet:
-        console.print(f"[dim]✓ Kimi agent config: {KIMI_AGENT_FILE.name}[/dim]")
+        console.print(f"[dim] Kimi agent config: {KIMI_AGENT_FILE.name}[/dim]")
     
     return KIMI_AGENT_FILE
 
@@ -297,18 +305,15 @@ agent:
 def detect_cli() -> CLIType:
     """Detect which CLI is available (claude, kimi, or qwen)"""
     # Check for Claude
-    result = subprocess.run(["which", "claude"], capture_output=True)
-    if result.returncode == 0:
+    if shutil.which("claude"):
         return "claude"
 
     # Check for Kimi
-    result = subprocess.run(["which", "kimi"], capture_output=True)
-    if result.returncode == 0:
+    if shutil.which("kimi"):
         return "kimi"
 
     # Check for Qwen
-    result = subprocess.run(["which", "qwen"], capture_output=True)
-    if result.returncode == 0:
+    if shutil.which("qwen"):
         return "qwen"
 
     return None
@@ -339,8 +344,8 @@ def _validate_token(backend_url: str, token: str) -> bool:
                            headers={"Authorization": f"Bearer {token}"})
         return r.status_code == 200
     except httpx.ConnectError:
-        console.print("[red]✗ Cannot reach backend — is it running?[/red]\n")
-        console.print("  → [cyan]docker-compose up -d[/cyan]\n")
+        console.print("[red] Cannot reach backend  is it running?[/red]\n")
+        console.print("   [cyan]docker-compose up -d[/cyan]\n")
         sys.exit(1)
 
 
@@ -360,14 +365,14 @@ def _do_login(backend_url: str) -> str:
         if response.status_code == 200:
             return response.json()["access_token"]
         elif response.status_code == 401:
-            console.print("[red]✗ Invalid credentials[/red]\n")
+            console.print("[red] Invalid credentials[/red]\n")
             sys.exit(1)
         else:
-            console.print(f"[red]✗ Login failed ({response.status_code})[/red]\n")
+            console.print(f"[red] Login failed ({response.status_code})[/red]\n")
             sys.exit(1)
     except httpx.ConnectError:
-        console.print("[red]✗ Cannot reach backend — is it running?[/red]\n")
-        console.print("  → [cyan]docker-compose up -d[/cyan]\n")
+        console.print("[red] Cannot reach backend  is it running?[/red]\n")
+        console.print("   [cyan]docker-compose up -d[/cyan]\n")
         sys.exit(1)
 
 
@@ -391,16 +396,16 @@ def authenticate(backend_url: str) -> str:
 
     Priority:
       1. Nemesis_TOKEN env var (CI / scripting)
-      2. .nemesis/api-key  — long-lived (1 year), never prompts once set
-      3. .nemesis/session  — 24h token from a previous login
-      4. Interactive login → issues api-key stored in .nemesis/api-key
+      2. .nemesis/api-key   long-lived (1 year), never prompts once set
+      3. .nemesis/session   24h token from a previous login
+      4. Interactive login  issues api-key stored in .nemesis/api-key
     """
     # 1. Env var override (CI / scripting)
     token = os.getenv("Nemesis_TOKEN")
     if token:
         return token
 
-    # 2. Long-lived API key — valid for 1 year, silently reused
+    # 2. Long-lived API key  valid for 1 year, silently reused
     token = _read_file_token(API_KEY_FILE)
     if token and _validate_token(backend_url, token):
         return token
@@ -420,16 +425,16 @@ def authenticate(backend_url: str) -> str:
     if token:
         SESSION_FILE.unlink(missing_ok=True)
 
-    # 4. Interactive login — first time or after key revocation
+    # 4. Interactive login  first time or after key revocation
     session_token = _do_login(backend_url)
     api_key = _fetch_api_key(backend_url, session_token)
     if api_key:
         _write_file_token(API_KEY_FILE, api_key)
-        console.print("[green]✓ Authenticated[/green]\n")
+        console.print("[green] Authenticated[/green]\n")
         return api_key
     # Fallback: api-token endpoint unavailable, cache the session token
     _write_file_token(SESSION_FILE, session_token)
-    console.print("[green]✓ Authenticated[/green]\n")
+    console.print("[green] Authenticated[/green]\n")
     return session_token
 
 
@@ -459,8 +464,8 @@ def resolve_workspace(assessment_name: str, backend_url: str, token: str = "") -
                     return None
 
         except httpx.ConnectError:
-            # Backend is not reachable at all — don't retry, fail fast
-            console.print("\n[red]✗ Failed to connect to Nemesis backend[/red]\n")
+            # Backend is not reachable at all  don't retry, fail fast
+            console.print("\n[red] Failed to connect to Nemesis backend[/red]\n")
             console.print("[yellow]Troubleshooting:[/yellow]")
             console.print("  1. Check: [cyan]docker-compose ps[/cyan]")
             console.print("  2. Start: [cyan]docker-compose up -d[/cyan]")
@@ -468,12 +473,12 @@ def resolve_workspace(assessment_name: str, backend_url: str, token: str = "") -
             sys.exit(1)
 
         except (httpx.ReadError, httpx.WriteError, httpx.PoolTimeout, httpx.ConnectTimeout, httpx.ReadTimeout) as e:
-            # Transient network error (e.g. "Connection reset by peer") — retry
+            # Transient network error (e.g. "Connection reset by peer")  retry
             if attempt < max_retries - 1:
-                console.print(f"[yellow]⚠ Backend connection dropped ({type(e).__name__}), retrying in {retry_delays[attempt]}s...[/yellow]")
+                console.print(f"[yellow] Backend connection dropped ({type(e).__name__}), retrying in {retry_delays[attempt]}s...[/yellow]")
                 time.sleep(retry_delays[attempt])
             else:
-                console.print(f"\n[red]✗ Backend connection failed after {max_retries} attempts: {e}[/red]\n")
+                console.print(f"\n[red] Backend connection failed after {max_retries} attempts: {e}[/red]\n")
                 console.print("[yellow]Troubleshooting:[/yellow]")
                 console.print("  1. Check: [cyan]docker-compose ps[/cyan]")
                 console.print("  2. Restart backend: [cyan]docker-compose restart backend[/cyan]")
@@ -485,12 +490,12 @@ def resolve_workspace(assessment_name: str, backend_url: str, token: str = "") -
 
 def show_assessment_not_found(assessment_name: str, backend_url: str):
     """Display detailed error when assessment workspace cannot be resolved"""
-    console.print(f"\n[red]✗ Cannot load assessment '{assessment_name}'[/red]\n")
+    console.print(f"\n[red] Cannot load assessment '{assessment_name}'[/red]\n")
 
     container_pref = CONTAINER_PREFS_FILE.read_text().strip() if CONTAINER_PREFS_FILE.exists() else "nemesis-pentest"
 
     if container_pref == "exegol" and not check_exegol_installed():
-        console.print("[yellow]⚠ No Exegol container detected on this system[/yellow]\n")
+        console.print("[yellow] No Exegol container detected on this system[/yellow]\n")
         console.print("[bold]Start an Exegol container before using Nemesis:[/bold]")
         console.print("  [cyan]exegol start <name>[/cyan]\n")
 
@@ -499,7 +504,7 @@ def show_assessment_not_found(assessment_name: str, backend_url: str):
 
 def show_cli_not_found():
     """Display error when neither Claude nor Kimi nor Qwen CLI is found"""
-    console.print("[red]✗ No compatible AI CLI found[/red]\n")
+    console.print("[red] No compatible AI CLI found[/red]\n")
     console.print("Please install one of the following:\n")
     console.print("[bold]Claude Code:[/bold]")
     console.print("  [cyan]curl -fsSL https://claude.ai/install.sh | bash[/cyan]\n")
@@ -550,9 +555,8 @@ def main(assessment, model, permission_mode, preprompt, base_url, api_key, no_mc
         cli_type = detected_cli
     else:
         # User specified a CLI, check if it's available
-        result = subprocess.run(["which", cli_choice], capture_output=True)
-        if result.returncode != 0:
-            console.print(f"[red]✗ {cli_choice.title()} CLI not found in PATH[/red]")
+        if not shutil.which(cli_choice):
+            console.print(f"[red] {cli_choice.title()} CLI not found in PATH[/red]")
             console.print(f"Install {cli_choice} or use --cli auto to use available CLI\n")
             sys.exit(1)
         cli_type = cli_choice
@@ -570,7 +574,7 @@ def main(assessment, model, permission_mode, preprompt, base_url, api_key, no_mc
     backend_url = os.getenv("BACKEND_API_URL", DEFAULT_BACKEND)
     db_url = os.getenv("DATABASE_URL", "postgresql://nemesis:nemesis@localhost:5432/nemesis_assessments")
 
-    # Authenticate once — all subsequent API calls use this token.
+    # Authenticate once  all subsequent API calls use this token.
     # The token is also forwarded to the MCP server via Nemesis_TOKEN env var.
     token = authenticate(backend_url)
     auth_headers = {"Authorization": f"Bearer {token}"}
@@ -605,7 +609,7 @@ def main(assessment, model, permission_mode, preprompt, base_url, api_key, no_mc
                         container = a.get('container_name', 'N/A')
                         table.add_row(f"{i}.", a['name'], f"({container})")
                 else:
-                    console.print("[dim]No assessments yet — the AI can create one for you.[/dim]\n")
+                    console.print("[dim]No assessments yet  the AI can create one for you.[/dim]\n")
 
                 console.print(table)
                 console.print()
@@ -621,12 +625,12 @@ def main(assessment, model, permission_mode, preprompt, base_url, api_key, no_mc
                     # Empty input or "0" = skip (no assessment, AI can create one)
                     if choice == '' or choice == '0':
                         assessment = None
-                        console.print("\n[green]✓[/green] [dim]No assessment selected — AI can create one with create_assessment()[/dim]\n")
+                        console.print("\n[green][/green] [dim]No assessment selected  AI can create one with create_assessment()[/dim]\n")
                     else:
                         idx = int(choice) - 1
                         if 0 <= idx < len(assessments):
                             assessment = assessments[idx]['name']
-                            console.print(f"\n[green]✓[/green] Selected: [cyan]{assessment}[/cyan]\n")
+                            console.print(f"\n[green][/green] Selected: [cyan]{assessment}[/cyan]\n")
                         else:
                             console.print("\n[red]Invalid selection[/red]\n")
                             sys.exit(1)
@@ -636,14 +640,14 @@ def main(assessment, model, permission_mode, preprompt, base_url, api_key, no_mc
                     sys.exit(0)
                     
         except httpx.ConnectError:
-            console.print("[red]✗ Failed to connect to Nemesis backend[/red]")
+            console.print("[red] Failed to connect to Nemesis backend[/red]")
             console.print("\nStart the backend:")
-            console.print("  → [cyan]docker-compose up -d[/cyan]\n")
+            console.print("   [cyan]docker-compose up -d[/cyan]\n")
             sys.exit(1)
         except (httpx.ReadError, httpx.WriteError, httpx.PoolTimeout, httpx.ConnectTimeout, httpx.ReadTimeout) as e:
-            console.print(f"[red]✗ Backend connection dropped: {e}[/red]")
+            console.print(f"[red] Backend connection dropped: {e}[/red]")
             console.print("\nThe backend reset the connection. Try restarting it:")
-            console.print("  → [cyan]docker-compose restart backend[/cyan]\n")
+            console.print("   [cyan]docker-compose restart backend[/cyan]\n")
             sys.exit(1)
     
     # Load PrePrompt (custom or default)
@@ -652,56 +656,56 @@ def main(assessment, model, permission_mode, preprompt, base_url, api_key, no_mc
         custom_preprompt_path = Path(preprompt).expanduser().resolve()
         
         if not custom_preprompt_path.exists():
-            console.print(f"[red]✗ Custom preprompt file not found: {custom_preprompt_path}[/red]\n")
+            console.print(f"[red] Custom preprompt file not found: {custom_preprompt_path}[/red]\n")
             console.print("[yellow]Troubleshooting:[/yellow]")
-            console.print(f"  • Check the path is correct")
-            console.print(f"  • Use absolute path or path relative to current directory")
-            console.print(f"  • Default preprompt: {PREPROMPT_FILE}\n")
+            console.print(f"   Check the path is correct")
+            console.print(f"   Use absolute path or path relative to current directory")
+            console.print(f"   Default preprompt: {PREPROMPT_FILE}\n")
             sys.exit(1)
         
         if not custom_preprompt_path.is_file():
-            console.print(f"[red]✗ Path is not a file: {custom_preprompt_path}[/red]\n")
+            console.print(f"[red] Path is not a file: {custom_preprompt_path}[/red]\n")
             sys.exit(1)
         
         try:
             preprompt_content = custom_preprompt_path.read_text()
             if not quiet:
-                console.print(f"[green]✓ Using custom preprompt:[/green] [cyan]{custom_preprompt_path.name}[/cyan]")
+                console.print(f"[green] Using custom preprompt:[/green] [cyan]{custom_preprompt_path.name}[/cyan]")
                 console.print(f"[dim]  Path: {custom_preprompt_path}[/dim]\n")
         except Exception as e:
-            console.print(f"[red]✗ Failed to read preprompt file: {e}[/red]\n")
+            console.print(f"[red] Failed to read preprompt file: {e}[/red]\n")
             sys.exit(1)
     else:
         # Use default preprompt
         if not PREPROMPT_FILE.exists():
-            console.print(f"[red]✗ Default preprompt not found: {PREPROMPT_FILE}[/red]\n")
+            console.print(f"[red] Default preprompt not found: {PREPROMPT_FILE}[/red]\n")
             console.print("[yellow]Create the file or specify a custom preprompt with --preprompt[/yellow]\n")
             sys.exit(1)
         
         try:
             preprompt_content = PREPROMPT_FILE.read_text()
             if not quiet and debug:
-                console.print(f"[dim]✓ Using default preprompt: {PREPROMPT_FILE.name}[/dim]\n")
+                console.print(f"[dim] Using default preprompt: {PREPROMPT_FILE.name}[/dim]\n")
         except Exception as e:
-            console.print(f"[red]✗ Failed to read default preprompt: {e}[/red]\n")
+            console.print(f"[red] Failed to read default preprompt: {e}[/red]\n")
             sys.exit(1)
     
     # MCP Configuration
     if not no_mcp:
         if http_url or os.getenv("Nemesis_MCP_HTTP_URL"):
-            # HTTP transport — don't spawn a subprocess, point the client at the URL.
+            # HTTP transport  don't spawn a subprocess, point the client at the URL.
             url = http_url or os.getenv("Nemesis_MCP_HTTP_URL")
             key = mcp_api_key or os.getenv("Nemesis_MCP_API_KEY", "")
             if not key:
                 console.print(
-                    "[red]✗ HTTP MCP requires a Bearer key. "
+                    "[red] HTTP MCP requires a Bearer key. "
                     "Pass --mcp-api-key or set Nemesis_MCP_API_KEY.[/red]\n"
                 )
                 sys.exit(1)
             generate_mcp_http_config(url, key, quiet)
         else:
             if not MCP_SERVER_PATH.exists():
-                console.print(f"[red]✗ MCP server not found: {MCP_SERVER_PATH}[/red]\n")
+                console.print(f"[red] MCP server not found: {MCP_SERVER_PATH}[/red]\n")
                 sys.exit(1)
             generate_mcp_config(db_url, token, quiet)
     
@@ -725,8 +729,8 @@ def main(assessment, model, permission_mode, preprompt, base_url, api_key, no_mc
         container_name = result["container_name"]
         
         if not quiet and debug:
-            console.print(f"[dim]✓ Container: {container_name}[/dim]")
-            console.print(f"[dim]✓ Workspace: {workspace_path}[/dim]\n")
+            console.print(f"[dim] Container: {container_name}[/dim]")
+            console.print(f"[dim] Workspace: {workspace_path}[/dim]\n")
 
         # Enhance preprompt with assessment context for all CLI types
         preprompt_content += f"""
@@ -861,7 +865,7 @@ The assessment workspace is ready. Use your standard tools to work with files an
                     python_bin = ensure_backend_venv(quiet=True)
                     python_bin_str = str(python_bin.absolute())
                 except Exception:
-                    python_bin_str = "python3"
+                    python_bin_str = sys.executable
                 
                 settings["mcpServers"] = {
                     "nemesis-mcp": {
@@ -898,17 +902,17 @@ The assessment workspace is ready. Use your standard tools to work with files an
             # Can't write to workspace - this is a critical error
             # We don't fallback to ~/.qwen/ to avoid cross-assessment config pollution
             if not quiet:
-                console.print("[red]✗ Cannot write to workspace configuration directory[/red]")
+                console.print("[red] Cannot write to workspace configuration directory[/red]")
                 console.print(f"[dim]  Error: {e}[/dim]")
                 console.print("\n[yellow]Troubleshooting:[/yellow]")
-                console.print("  • Check workspace permissions:")
+                console.print("   Check workspace permissions:")
                 console.print(f"    [cyan]ls -la {workspace_path}[/cyan]")
-                console.print("  • Fix ownership:")
+                console.print("   Fix ownership:")
                 console.print(f"    [cyan]sudo chown -R $USER:$USER {workspace_path}[/cyan]\n")
             sys.exit(1)
 
         if not quiet:
-            console.print(f"[dim]✓ Qwen config: {config_location} directory[/dim]")
+            console.print(f"[dim] Qwen config: {config_location} directory[/dim]")
             console.print(f"[dim]  Path: {config_dir}[/dim]")
 
         # Write settings.json
@@ -921,7 +925,7 @@ The assessment workspace is ready. Use your standard tools to work with files an
         qwen_md_file.write_text(preprompt_content)
         
         if not quiet and debug:
-            console.print(f"[dim]✓ System prompt: {qwen_md_file.name} (workspace root)[/dim]\n")
+            console.print(f"[dim] System prompt: {qwen_md_file.name} (workspace root)[/dim]\n")
 
         # Qwen CLI command
         cli_args = ["qwen"]
@@ -974,7 +978,7 @@ The assessment workspace is ready. Use your standard tools to work with files an
     if not quiet:
         console.print(f"[dim]Starting {cli_name}...[/dim]\n")
     else:
-        console.print(f"[cyan]Nemesis[/cyan] → {assessment or 'Nemesis Project'} ({cli_name})\n")
+        console.print(f"[cyan]Nemesis[/cyan]  {assessment or 'Nemesis Project'} ({cli_name})\n")
 
     try:
         if cli_type == "claude":

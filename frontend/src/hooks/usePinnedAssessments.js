@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
+﻿import { useCallback, useEffect, useState } from 'react';
 
-const STORAGE_KEY = 'aida_pinned_assessments';
-const EVENT_NAME = 'aida:pinned-assessments-changed';
+const STORAGE_KEY = 'nemesis_pinned_assessments';
+const EVENT_NAME = 'nemesis:pinned-assessments-changed';
 
 const readPinned = () => {
   try {

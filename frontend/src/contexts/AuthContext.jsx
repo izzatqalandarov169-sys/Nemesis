@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Authentication Context
  * Manages JWT auth state, login, password change, and logout.
  */
@@ -30,7 +30,7 @@ export function AuthProvider({ children }) {
         setBackendUnreachable(false);
 
         if (setup_required) {
-          // No accounts yet — skip token validation, render setup wizard.
+          // No accounts yet â€” skip token validation, render setup wizard.
           setLoading(false);
           return;
         }
@@ -72,7 +72,7 @@ export function AuthProvider({ children }) {
     setToken(result.token);
     setUser(result.user);
     setBackendUnreachable(false);
-    window.dispatchEvent(new CustomEvent('aida:auth-loaded'));
+    window.dispatchEvent(new CustomEvent('nemesis:auth-loaded'));
     return result;
   }, []);
 
@@ -82,7 +82,7 @@ export function AuthProvider({ children }) {
     setUser(result.user);
     setSetupRequired(false);
     setBackendUnreachable(false);
-    window.dispatchEvent(new CustomEvent('aida:auth-loaded'));
+    window.dispatchEvent(new CustomEvent('nemesis:auth-loaded'));
     return result;
   }, []);
 
@@ -99,8 +99,8 @@ export function AuthProvider({ children }) {
       setToken(null);
       setUser(null);
     };
-    window.addEventListener('aida:auth-cleared', onCleared);
-    return () => window.removeEventListener('aida:auth-cleared', onCleared);
+    window.addEventListener('nemesis:auth-cleared', onCleared);
+    return () => window.removeEventListener('nemesis:auth-cleared', onCleared);
   }, []);
 
   const refreshUser = useCallback((freshUser) => {

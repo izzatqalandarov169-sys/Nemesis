@@ -56,10 +56,10 @@ start-legacy.sh
 stop-legacy.sh
 
 # MCP config (contains API keys) and local runtime state
-/.aida/mcp-config.json
-/.aida/container-preference
-/.aida/session
-/.aida/api-key
+/.nemesis/mcp-config.json
+/.nemesis/container-preference
+/.nemesis/session
+/.nemesis/api-key
 
 # Docker
 docker-compose.override.yml
@@ -72,4 +72,4 @@ switch-db.sh
 .claude/
 
 # TLS — Caddyfile generated dynamically by start.sh in --lan / --domain mode
-/.aida/Caddyfile
+/.nemesis/Caddyfile

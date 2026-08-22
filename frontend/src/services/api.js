@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Axios API client configuration
  */
 import axios from 'axios';
@@ -16,7 +16,7 @@ const apiClient = axios.create({
 // Request interceptor - attach JWT token
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('aida_token');
+    const token = localStorage.getItem('nemesis_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -27,10 +27,10 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Response interceptor — handle 401 (expired/invalid token).
+// Response interceptor â€” handle 401 (expired/invalid token).
 // We must NEVER call window.location.reload() here: a reload would re-mount
 // every context, which would re-fire the same protected requests, which would
-// 401 again, which would reload again — an infinite loop. Instead we clear the
+// 401 again, which would reload again â€” an infinite loop. Instead we clear the
 // stored auth and emit an event so AuthContext can transition to <Login />
 // without unmounting the React tree.
 apiClient.interceptors.response.use(
@@ -39,10 +39,10 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401) {
       const url = error.config?.url || '';
       const isAuthEndpoint = url.includes('/auth/');
-      if (!isAuthEndpoint && localStorage.getItem('aida_token')) {
-        localStorage.removeItem('aida_token');
-        localStorage.removeItem('aida_user');
-        window.dispatchEvent(new CustomEvent('aida:auth-cleared'));
+      if (!isAuthEndpoint && localStorage.getItem('nemesis_token')) {
+        localStorage.removeItem('nemesis_token');
+        localStorage.removeItem('nemesis_user');
+        window.dispatchEvent(new CustomEvent('nemesis:auth-cleared'));
       }
     }
     const message = error.response?.data?.detail || error.message || 'An error occurred';

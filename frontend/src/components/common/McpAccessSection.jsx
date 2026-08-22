@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import {
   Key,
   Copy,
@@ -25,7 +25,7 @@ const POLICY_OPTIONS = [
 ];
 
 function formatDate(iso) {
-  if (!iso) return '—';
+  if (!iso) return 'â€”';
   try {
     return new Date(iso).toLocaleString();
   } catch {
@@ -153,7 +153,7 @@ function McpAccessSection() {
       return JSON.stringify(
         {
           mcpServers: {
-            aida: {
+            nemesis: {
               url,
               headers: { Authorization: `Bearer ${token}` },
             },
@@ -167,7 +167,7 @@ function McpAccessSection() {
       return JSON.stringify(
         {
           mcpServers: {
-            aida: {
+            nemesis: {
               url,
               headers: { Authorization: `Bearer ${token}` },
             },
@@ -178,7 +178,7 @@ function McpAccessSection() {
       );
     }
     // claude-code default
-    return `claude mcp add --transport http aida ${url} --header "Authorization: Bearer ${token}"`;
+    return `claude mcp add --transport http nemesis ${url} --header "Authorization: Bearer ${token}"`;
   }
 
   const policyDirty = policy !== savedPolicy;
@@ -295,7 +295,7 @@ function McpAccessSection() {
         </div>
 
         {loading ? (
-          <div className="text-xs text-neutral-500">Loading…</div>
+          <div className="text-xs text-neutral-500">Loadingâ€¦</div>
         ) : keys.length === 0 ? (
           <div className="text-xs text-neutral-500">
             No keys yet. Create one to let an HTTP MCP client connect.
@@ -318,7 +318,7 @@ function McpAccessSection() {
                   <tr key={k.id}>
                     <td className="py-2 text-neutral-900 dark:text-neutral-100">{k.name}</td>
                     <td className="py-2 font-mono text-neutral-600 dark:text-neutral-400">
-                      {k.key_prefix}…
+                      {k.key_prefix}â€¦
                     </td>
                     <td className="py-2 text-neutral-500">{formatDate(k.created_at)}</td>
                     <td className="py-2 text-neutral-500">{formatDate(k.last_used_at)}</td>
@@ -359,7 +359,7 @@ function McpAccessSection() {
               New API key
             </h3>
             <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-4">
-              Pick a memorable name, e.g. <em>Claude Code — laptop</em>.
+              Pick a memorable name, e.g. <em>Claude Code â€” laptop</em>.
             </p>
             <input
               autoFocus
@@ -387,7 +387,7 @@ function McpAccessSection() {
                 disabled={creating || !newKeyName.trim()}
                 className="px-3 py-1.5 text-xs font-medium rounded-lg bg-primary-600 hover:bg-primary-700 text-white disabled:opacity-50"
               >
-                {creating ? 'Creating…' : 'Create'}
+                {creating ? 'Creatingâ€¦' : 'Create'}
               </button>
             </div>
           </div>
@@ -403,7 +403,7 @@ function McpAccessSection() {
                 Key created
               </h3>
               <p className="text-xs text-amber-700 dark:text-amber-400 mt-1 flex items-center gap-1">
-                <AlertTriangle className="w-3 h-3" /> Save it now — you won't see it again.
+                <AlertTriangle className="w-3 h-3" /> Save it now â€” you won't see it again.
               </p>
             </div>
 

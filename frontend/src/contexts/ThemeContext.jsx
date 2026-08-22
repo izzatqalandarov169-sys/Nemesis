@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+﻿import { createContext, useContext, useState, useEffect } from 'react';
 import apiClient from '../services/api';
 
 const ThemeContext = createContext();
@@ -121,7 +121,7 @@ export const ThemeProvider = ({ children }) => {
   // without re-fetching protected endpoints while logged out.
   useEffect(() => {
     const tryLoad = () => {
-      if (localStorage.getItem('aida_token')) {
+      if (localStorage.getItem('nemesis_token')) {
         loadTheme();
         loadPrimaryColor();
       } else {
@@ -130,11 +130,11 @@ export const ThemeProvider = ({ children }) => {
       }
     };
     tryLoad();
-    window.addEventListener('aida:auth-loaded', tryLoad);
-    window.addEventListener('aida:auth-cleared', tryLoad);
+    window.addEventListener('nemesis:auth-loaded', tryLoad);
+    window.addEventListener('nemesis:auth-cleared', tryLoad);
     return () => {
-      window.removeEventListener('aida:auth-loaded', tryLoad);
-      window.removeEventListener('aida:auth-cleared', tryLoad);
+      window.removeEventListener('nemesis:auth-loaded', tryLoad);
+      window.removeEventListener('nemesis:auth-cleared', tryLoad);
     };
   }, []);
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { Logo, LayoutDashboard, FileText, Terminal, Settings, ChevronLeft, ChevronRight } from '../icons';
 import { LogOut, Users as UsersIcon } from 'lucide-react';
@@ -87,15 +87,15 @@ const Sidebar = ({ onToggle }) => {
       <div className="h-14 flex items-center gap-2 px-4 border-b border-neutral-200 dark:border-neutral-700">
         <div className="w-10 h-10 flex items-center justify-center flex-shrink-0">
           <img
-            src="/assets/aida-logo.png"
-            alt="AIDA Logo"
+            src="/assets/nemesis-logo.png"
+            alt="NEMESIS Logo"
             className="w-8 h-8 object-contain"
             style={{ filter: isDark ? 'invert(1)' : 'none' }}
           />
         </div>
         {shouldShowExpanded && (
           <div className="min-w-0">
-            <h1 className="text-sm font-bold text-neutral-900 dark:text-neutral-100">AIDA</h1>
+            <h1 className="text-sm font-bold text-neutral-900 dark:text-neutral-100">NEMESIS</h1>
             <p className="text-xs text-neutral-500 dark:text-neutral-400">AI-Driven Security Assessment</p>
           </div>
         )}
@@ -144,15 +144,15 @@ const Sidebar = ({ onToggle }) => {
           <div className="flex items-center gap-2 px-2 py-1">
             <div className="w-7 h-7 flex items-center justify-center flex-shrink-0">
               <img
-                src="/assets/aida-logo.png"
-                alt="AIDA Logo"
+                src="/assets/nemesis-logo.png"
+                alt="NEMESIS Logo"
                 className="w-6 h-6 object-contain"
                 style={{ filter: isDark ? 'invert(1)' : 'none' }}
               />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-neutral-900 dark:text-neutral-100 truncate">
-                {user ? user.username : 'AIDA'}
+                {user ? user.username : 'NEMESIS'}
               </p>
               <p className="text-xs text-neutral-500 dark:text-neutral-400">v1.1.0</p>
             </div>

@@ -2,15 +2,15 @@ services:
   # PostgreSQL Database
   postgres:
     image: postgres:16-alpine
-    container_name: aida_postgres
+    container_name: nemesis_postgres
     env_file:
       - backend/.env
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-aida}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-aida}
-      POSTGRES_DB: ${POSTGRES_DB:-aida_assessments}
+      POSTGRES_USER: ${POSTGRES_USER:-nemesis}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nemesis}
+      POSTGRES_DB: ${POSTGRES_DB:-nemesis_assessments}
     ports:
-      # Bind to localhost only — the database must never be reachable from
+      # Bind to localhost only â€” the database must never be reachable from
       # the LAN. The backend talks to postgres over the internal docker
       # network, so this mapping only exists for host-side dev tools (psql,
       # pgAdmin, DBeaver). Remove the line entirely to lock it down further.
@@ -18,9 +18,9 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - aida-network
+      - nemesis-network
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-aida} -d ${POSTGRES_DB:-aida_assessments}" ]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nemesis} -d ${POSTGRES_DB:-nemesis_assessments}" ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -28,23 +28,23 @@ services:
 
   # FastAPI Backend
   backend:
-    image: vasco0x4/aida-backend:latest
+    image: nemesis-backend:local
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: aida_backend
+    container_name: nemesis_backend
     env_file:
       - backend/.env
     environment:
       # DB_HOST is set by switch-db.sh in root .env (default: postgres)
       POSTGRES_HOST: ${DB_HOST:-postgres}
-      POSTGRES_DB: ${DB_NAME:-aida_assessments}
+      POSTGRES_DB: ${DB_NAME:-nemesis_assessments}
       # Set to 'development' by start.sh --dev for hot reload
       ENVIRONMENT: ${ENVIRONMENT:-production}
-      # Injected by start.sh --lan (dev mode) — includes LAN IP + localhost on port 5173
+      # Injected by start.sh --lan (dev mode) â€” includes LAN IP + localhost on port 5173
       BACKEND_CORS_ORIGINS: ${BACKEND_CORS_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173}
       # Route docker CLI through the socket proxy instead of raw daemon socket.
-      # The proxy only allows inspect/exec/start — no run/create/volumes.
+      # The proxy only allows inspect/exec/start â€” no run/create/volumes.
       DOCKER_HOST: tcp://docker-proxy:2375
     ports:
       # Bind host is configurable via BACKEND_BIND_HOST. Default 127.0.0.1
@@ -57,11 +57,11 @@ services:
       # :z flag enables SELinux compatibility (RHEL/Fedora)
       - ./backend:/app:z
       - /app/venv
-      # Docker socket removed — backend talks to docker-proxy instead.
+      # Docker socket removed â€” backend talks to docker-proxy instead.
       # Mount logs directory with SELinux flag
       - ./backend/logs:/app/logs:z
     networks:
-      - aida-network
+      - nemesis-network
     depends_on:
       postgres:
         condition: service_healthy
@@ -77,11 +77,11 @@ services:
 
   # React Frontend
   frontend:
-    image: vasco0x4/aida-frontend:latest
+    image: nemesis-frontend:local
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: aida_frontend
+    container_name: nemesis_frontend
     environment:
       # In dev+LAN mode start.sh exports VITE_API_URL=http://[IP]:8000/api,
       # which takes priority over the localhost default (Vite gives process env
@@ -97,7 +97,7 @@ services:
       - ./frontend:/app:z
       - /app/node_modules
     networks:
-      - aida-network
+      - nemesis-network
     depends_on:
       - backend
     restart: unless-stopped
@@ -108,15 +108,15 @@ services:
       retries: 3
       start_period: 40s
 
-  # AIDA Pentest Container
+  # NEMESIS Pentest Container
   # Lightweight execution environment for AI-driven assessments.
   # The backend connects to this container via Docker socket (docker exec).
-  # Docker Socket Proxy — exposes a filtered Docker API to the backend.
+  # Docker Socket Proxy â€” exposes a filtered Docker API to the backend.
   # Only container inspection + exec are allowed; create/run/volumes/images
   # are blocked, so a compromised backend cannot escape to the host.
   docker-proxy:
     image: tecnativa/docker-socket-proxy:latest
-    container_name: aida_docker_proxy
+    container_name: nemesis_docker_proxy
     restart: unless-stopped
     environment:
       # Read-only by default; POST is needed for exec & start.
@@ -144,34 +144,34 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
-      - aida-network
+      - nemesis-network
     # This container only needs to be reachable by the backend, never exposed.
 
-  aida-pentest:
-    image: vasco0x4/aida-pentest:latest
+  nemesis-pentest:
+    image: nemesis-pentest:local
     build:
       context: ./pentest
       dockerfile: Dockerfile
-    container_name: aida-pentest
+    container_name: nemesis-pentest
     tty: true
     stdin_open: true
     volumes:
-      # Workspace bind mount — same /workspace path as Exegol.
+      # Workspace bind mount â€” same /workspace path as Exegol.
       # workspace_service.py discovers this path via docker inspect, so the
-      # host path resolution in aida.py continues to work without changes.
-      - ${HOME}/.aida/workspaces:/workspace
+      # host path resolution in nemesis.py continues to work without changes.
+      - ~/.nemesis/workspaces:/workspace
     networks:
       - pentest-network
     restart: unless-stopped
 
 networks:
-  aida-network:
-    name: aida-network
+  nemesis-network:
+    name: nemesis-network
     driver: bridge
   pentest-network:
-    name: aida-pentest-network
+    name: nemesis-pentest-network
     driver: bridge
 
 volumes:
   postgres_data:
-    name: aida_postgres_data
+    name: nemesis_postgres_data

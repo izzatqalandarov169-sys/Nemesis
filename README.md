@@ -19,41 +19,27 @@ and documents every finding with the commands used.
 
 ---
 
-## Real Results
-
-Claude + Nemesis isn't just talk. It produces results that end up in CVE databases.
-
-| ID | Severity | Project | Description |
-|----|----------|---------|-------------|
-| [CVE-2026-32034](https://nvd.nist.gov/vuln/detail/CVE-2026-32034) | ![MEDIUM](https://img.shields.io/badge/CVSS-5.6%20MEDIUM-yellow) | [openclaw/openclaw](https://github.com/openclaw/openclaw) | Insecure HTTP permits hijacking |
-| [GHSA-xfvv-ggvq-pchh](https://github.com/appsmithorg/appsmith/security/advisories/GHSA-xfvv-ggvq-pchh) | ![HIGH](https://img.shields.io/badge/CVSS-8.9%20HIGH-orange) | [appsmithorg/appsmith](https://github.com/appsmithorg/appsmith) | RCE via newline injection in env variable endpoint |
-| [GHSA-vvxf-f8q9-86gh](https://github.com/appsmithorg/appsmith/security/advisories/GHSA-vvxf-f8q9-86gh) | ![MEDIUM](https://img.shields.io/badge/CVSS-5.1%20MEDIUM-yellow) | [appsmithorg/appsmith](https://github.com/appsmithorg/appsmith) | SSRF via SMTP test endpoint — internal port scanning |
-
-*More under responsible disclosure — awaiting publication.*
-
----
-
 ## What It Does
 
 Nemesis was built to give your AI everything a pentester needs to work.
 
 **A fully equipped execution environment.**
-A Docker container loaded with Linux pentesting tools — nmap, sqlmap, ffuf,
+A Docker container loaded with Linux pentesting tools  nmap, sqlmap, ffuf,
 nuclei, and anything else it needs. If a tool is missing, the agent installs it.
 
 **Custom exploitation via Python.**
-The agent generates and executes Python scripts on the fly — custom payloads,
+The agent generates and executes Python scripts on the fly  custom payloads,
 encoding tricks, protocol quirks, or any logic that off-the-shelf tools can't handle.
 
 **Burp-level HTTP control.**
-The agent sends and manipulates HTTP requests directly — headers, cookies, body,
+The agent sends and manipulates HTTP requests directly  headers, cookies, body,
 auth tokens. Stored credentials are auto-injected via placeholders. Same power
 as Burp Repeater, without the UI overhead.
 
 **A persistent notebook.**
 The agent logs what it knows about the application, maps attack paths, records
 observations, flags interesting behaviors, and documents every confirmed
-vulnerability — commands used, raw output, full context. Stop an engagement
+vulnerability  commands used, raw output, full context. Stop an engagement
 and resume it days later for retest, deeper analysis, or handoff.
 
 ### Where is the real pentester?
@@ -79,9 +65,9 @@ cd Nemesis
 
 Dashboard: `http://localhost:31337`
 
-> `./start.sh --dev` — hot reload for contributors
-> `./start.sh --lan` — share across your local network (HTTPS, self-signed)
-> `./start.sh --domain x.com` — public deploy with Let's Encrypt
+> `./start.sh --dev`  hot reload for contributors
+> `./start.sh --lan`  share across your local network (HTTPS, self-signed)
+> `./start.sh --domain x.com`  public deploy with Let's Encrypt
 
 ### Launch the Agent
 
@@ -104,7 +90,7 @@ Scope: all subdomains, authentication flows, API endpoints
 Exclude: brute-force on /login
 ```
 
-> Full setup for all AI clients → [INSTALLATION.md](Docs/INSTALLATION.md)
+> Full setup for all AI clients  [INSTALLATION.md](Docs/INSTALLATION.md)
 
 ---
 
@@ -136,27 +122,27 @@ The smarter the model, the deeper the engagement. Swap models without changing a
 | `tech_detection()` | Technology fingerprinting |
 | `python_exec()` | Execute Python in the container |
 | `http_request()` | HTTP client with credential auto-substitution |
-| `add_card()` | Log a finding — CVSS 4.0 auto-scored |
+| `add_card()` | Log a finding  CVSS 4.0 auto-scored |
 | `credentials_add()` | Store credentials, auto-injected via `{{PLACEHOLDER}}` |
 
-Built-in `nemesis-pentest` container (~2 GB, starts automatically). Plug in [Exegol](https://github.com/ThePorgs/Exegol) for 400+ tools — switchable anytime from the dashboard.
+Built-in `nemesis-pentest` container (~2 GB, starts automatically). Plug in [Exegol](https://github.com/ThePorgs/Exegol) for 400+ tools  switchable anytime from the dashboard.
 
-> Full reference → [MCP_TOOLS.md](Docs/MCP_TOOLS.md)
+> Full reference  [MCP_TOOLS.md](Docs/MCP_TOOLS.md)
 
 ---
 
 ## What's New in v1.1.0
 
-- **Authentication** — JWT, admin/user roles, first-run setup wizard
-- **PDF reports** — one-click export per assessment
-- **CVSS 4.0** — automatic scoring on every finding
-- **Attack timeline** — auto-generated per engagement
-- **Notifications** — Telegram, Slack, Email with optional PDF attachment
-- **Assessment templates** — start from predefined methodologies
-- **`nemesis-pentest` container** — lightweight built-in environment, no Exegol required
-- **`python_exec` + `http_request`** — advanced execution tools
-- **Cross-assessment findings view** — aggregate and filter findings across all engagements
-- **Security hardening** — Docker socket proxy, path traversal prevention, localhost-only DB
+- **Authentication**  JWT, admin/user roles, first-run setup wizard
+- **PDF reports**  one-click export per assessment
+- **CVSS 4.0**  automatic scoring on every finding
+- **Attack timeline**  auto-generated per engagement
+- **Notifications**  Telegram, Slack, Email with optional PDF attachment
+- **Assessment templates**  start from predefined methodologies
+- **`nemesis-pentest` container**  lightweight built-in environment, no Exegol required
+- **`python_exec` + `http_request`**  advanced execution tools
+- **Cross-assessment findings view**  aggregate and filter findings across all engagements
+- **Security hardening**  Docker socket proxy, path traversal prevention, localhost-only DB
 
 > !! Run locally or on your LAN. Do not expose the dashboard to the public. !!
 
@@ -166,7 +152,7 @@ Built-in `nemesis-pentest` container (~2 GB, starts automatically). Plug in [Exe
 
 | | |
 |--|--|
-| [INSTALLATION.md](Docs/INSTALLATION.md) | Full setup — all AI clients |
+| [INSTALLATION.md](Docs/INSTALLATION.md) | Full setup  all AI clients |
 | [USER_GUIDE.md](Docs/USER_GUIDE.md) | Platform usage guide |
 | [MCP_TOOLS.md](Docs/MCP_TOOLS.md) | Agent tool reference |
 | [ARCHITECTURE.md](Docs/ARCHITECTURE.md) | Technical deep dive |
@@ -179,32 +165,24 @@ Nemesis is actively developed.
 
 **Planned:**
 - OWASP testing guidelines integration
-- Multi-agent mode — specialized sub-agents per phase
+- Multi-agent mode  specialized sub-agents per phase
 - Active Directory / internal network module
 - Enhanced CLI capabilities
 
-Issues and PRs welcome → [GitHub Issues](https://github.com/Archsec-Emman/Nemesis/issues)
+Issues and PRs welcome  [GitHub Issues](https://github.com/Archsec-Emman/Nemesis/issues)
 
 ---
 
 ## License
 
-**AGPL v3** — free and open source.
+**AGPL v3**  free and open source.
 
 ---
 
 ## Credits
 
-- [Anthropic MCP](https://modelcontextprotocol.io/) — the tool-calling protocol powering agent actions
-- [Exegol](https://github.com/ThePorgs/Exegol) — supported as alternative container
-- The security community for the open-source tooling
-
----
+- [AIDA](https://github.com/vasco0x4/aida) by vasco0x4 - Nemesis is built on AIDA's platform (FastAPI backend, React dashboard, MCP tooling, pentest container). This project is a maintained derivative: rebranded, repaired, and extended. Credit for the original architecture belongs to the upstream author; AGPL v3 is preserved accordingly.
 
 
-<p align="center">
-  <a href="https://github.com/Archsec-Emman/Nemesis">⭐ Star on GitHub</a> •
-  <a href="https://discord.gg/RVJTWtkVA2">💬 Discord</a> •
-  <a href="https://github.com/Archsec-Emman/Nemesis/issues">Report Bug</a> •
-  <a href="mailto:Archsec-Emman@proton.me">Contact</a>
-</p>
+
+

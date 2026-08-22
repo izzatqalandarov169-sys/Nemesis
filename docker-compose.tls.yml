@@ -1,16 +1,16 @@
-# TLS overlay — used by ./start.sh --lan and ./start.sh --domain
+﻿# TLS overlay â€” used by ./start.sh --lan and ./start.sh --domain
 #   docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.tls.yml up -d
 #
 # What it does:
 #   - Adds Caddy as a TLS-terminating reverse proxy on ports 443/80.
 #   - Removes the frontend's host port binding (Nginx becomes internal,
 #     reachable only by Caddy via the Docker network).
-#   - The Caddyfile is generated dynamically by start.sh into .aida/Caddyfile
+#   - The Caddyfile is generated dynamically by start.sh into .nemesis/Caddyfile
 #     based on the chosen mode:
-#       --lan          → tls internal (Caddy local CA, browser warning OK)
-#       --domain X.Y   → email + ACME (Let's Encrypt, real cert)
+#       --lan          â†’ tls internal (Caddy local CA, browser warning OK)
+#       --domain X.Y   â†’ email + ACME (Let's Encrypt, real cert)
 #
-# This file is NOT loaded for the default ./start.sh — that mode uses
+# This file is NOT loaded for the default ./start.sh â€” that mode uses
 # Nginx on 31337 directly with no TLS (localhost-only is safe).
 
 services:
@@ -21,17 +21,17 @@ services:
 
   caddy:
     image: caddy:2-alpine
-    container_name: aida_caddy
+    container_name: nemesis_caddy
     restart: unless-stopped
     ports:
       - "${CADDY_BIND:-0.0.0.0}:443:443"
       - "${CADDY_BIND:-0.0.0.0}:80:80"
     volumes:
-      - ./.aida/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./.nemesis/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
     networks:
-      - aida-network
+      - nemesis-network
     depends_on:
       frontend:
         condition: service_started
@@ -46,6 +46,6 @@ services:
 
 volumes:
   caddy_data:
-    name: aida_caddy_data
+    name: nemesis_caddy_data
   caddy_config:
-    name: aida_caddy_config
+    name: nemesis_caddy_config

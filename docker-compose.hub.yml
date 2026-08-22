@@ -1,49 +1,49 @@
 # =============================================================================
-# AIDA — Docker Hub (pre-built images, no git clone needed)
+# NEMESIS â€” Docker Hub (pre-built images, no git clone needed)
 # =============================================================================
 #
-# Local-only quick start (HTTP, no TLS — fine for personal use on this machine):
-#   curl -fsSL https://raw.githubusercontent.com/Archsec-Emman/AIDA/main/docker-compose.hub.yml -o docker-compose.yml
+# Local-only quick start (HTTP, no TLS â€” fine for personal use on this machine):
+#   curl -fsSL https://raw.githubusercontent.com/Archsec-Emman/NEMESIS/main/docker-compose.hub.yml -o docker-compose.yml
 #   docker compose up -d
 #   open http://localhost:31337
 #
-# LAN sharing (HTTP — acceptable on a trusted home/office network):
+# LAN sharing (HTTP â€” acceptable on a trusted home/office network):
 #   FRONTEND_BIND=0.0.0.0 docker compose up -d
 #
 # For HTTPS (LAN with cert, or public domain with Let's Encrypt), use the git
 # repo and ./start.sh which adds Caddy as a TLS reverse proxy:
-#   git clone https://github.com/Arc-Cyber-Arsenal/Nemesis.git && cd AIDA
+#   git clone https://github.com/Arc-Cyber-Arsenal/Nemesis.git && cd NEMESIS
 #   ./start.sh --lan                          # https://<LAN_IP>
-#   ./start.sh --domain aida.example.com      # https://aida.example.com (Let's Encrypt)
+#   ./start.sh --domain nemesis.example.com      # https://nemesis.example.com (Let's Encrypt)
 #
 # =============================================================================
 
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: aida_postgres
+    container_name: nemesis_postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: aida
-      POSTGRES_PASSWORD: aida_secure_password_change_me
-      POSTGRES_DB: aida_assessments
+      POSTGRES_USER: nemesis
+      POSTGRES_PASSWORD: nemesis_secure_password_change_me
+      POSTGRES_DB: nemesis_assessments
     ports:
       - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
-      - aida-network
+      - nemesis-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U aida"]
+      test: ["CMD-SHELL", "pg_isready -U nemesis"]
       interval: 5s
       timeout: 5s
       retries: 5
 
-  # Docker Socket Proxy — filtered Docker API for the backend.
+  # Docker Socket Proxy â€” filtered Docker API for the backend.
   # Only inspect/exec/start allowed; run/create/volumes blocked.
   docker-proxy:
     image: tecnativa/docker-socket-proxy:latest
-    container_name: aida_docker_proxy
+    container_name: nemesis_docker_proxy
     restart: unless-stopped
     environment:
       POST: 1
@@ -68,20 +68,20 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
-      - aida-network
+      - nemesis-network
 
   backend:
-    image: vasco0x4/aida-backend:latest
-    container_name: aida_backend
+    image: archsec-emman/nemesis-backend:latest
+    container_name: nemesis_backend
     restart: unless-stopped
     environment:
-      POSTGRES_USER: aida
-      POSTGRES_PASSWORD: aida_secure_password_change_me
-      POSTGRES_DB: aida_assessments
+      POSTGRES_USER: nemesis
+      POSTGRES_PASSWORD: nemesis_secure_password_change_me
+      POSTGRES_DB: nemesis_assessments
       POSTGRES_HOST: postgres
       BACKEND_CORS_ORIGINS: "http://localhost:31337,http://127.0.0.1:31337"
       ENVIRONMENT: production
-      DEFAULT_CONTAINER_NAME: aida-pentest
+      DEFAULT_CONTAINER_NAME: nemesis-pentest
       CONTAINER_WORKSPACE_BASE: /workspace
       DOCKER_HOST: tcp://docker-proxy:2375
     ports:
@@ -89,7 +89,7 @@ services:
     volumes:
       - backend_logs:/app/logs
     networks:
-      - aida-network
+      - nemesis-network
     depends_on:
       postgres:
         condition: service_healthy
@@ -103,13 +103,13 @@ services:
       start_period: 40s
 
   frontend:
-    image: vasco0x4/aida-frontend:latest
-    container_name: aida_frontend
+    image: archsec-emman/nemesis-frontend:latest
+    container_name: nemesis_frontend
     restart: unless-stopped
     ports:
       - "${FRONTEND_BIND:-127.0.0.1}:31337:80"
     networks:
-      - aida-network
+      - nemesis-network
     depends_on:
       - backend
     healthcheck:
@@ -119,9 +119,9 @@ services:
       retries: 3
       start_period: 30s
 
-  aida-pentest:
-    image: vasco0x4/aida-pentest:latest
-    container_name: aida-pentest
+  nemesis-pentest:
+    image: archsec-emman/nemesis-pentest:latest
+    container_name: nemesis-pentest
     restart: unless-stopped
     tty: true
     stdin_open: true
@@ -132,14 +132,14 @@ services:
 
 volumes:
   postgres_data:
-    name: aida_postgres_data
+    name: nemesis_postgres_data
   backend_logs:
   workspaces:
 
 networks:
-  aida-network:
-    name: aida-network
+  nemesis-network:
+    name: nemesis-network
     driver: bridge
   pentest-network:
-    name: aida-pentest-network
+    name: nemesis-pentest-network
     driver: bridge

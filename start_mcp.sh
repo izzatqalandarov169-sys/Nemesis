@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+﻿#!/usr/bin/env bash
 set -euo pipefail
 
 log() {
@@ -12,9 +12,9 @@ err() {
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 BACKEND_DIR="$SCRIPT_DIR/backend"
 VENV_DIR="$BACKEND_DIR/venv"
-LOG_FILE="/tmp/aida_mcp.log"
+LOG_FILE="/tmp/nemesis_mcp.log"
 
-log "Starting AIDA"
+log "Starting NEMESIS"
 log "Script path: $SCRIPT_DIR"
 log "Backend path: $BACKEND_DIR"
 
@@ -43,14 +43,14 @@ log "Testing MCP import..."
 try:
     from mcp.server import Server
     import sys
-    print("✅ MCP import OK", file=sys.stderr)
+    print("âœ… MCP import OK", file=sys.stderr)
 except Exception as e:
     import sys
-    print(f"❌ MCP import FAILED: {e}", file=sys.stderr)
+    print(f"âŒ MCP import FAILED: {e}", file=sys.stderr)
     sys.exit(1)
 EOF
 
 log "Launching MCP server"
 log "Logs will be in $LOG_FILE"
 
-exec "$VENV_DIR/bin/python3" -u mcp/aida_mcp_server.py 2>"$LOG_FILE"
+exec "$VENV_DIR/bin/python3" -u mcp/nemesis_mcp_server.py 2>"$LOG_FILE"

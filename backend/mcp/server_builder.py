@@ -25,7 +25,7 @@ from mcp_resources import get_resources, handle_resource_read  # noqa: E402
 def build_mcp_server(mcp_service) -> Server:
     """Build a low-level MCP Server with tools and resources wired up.
 
-    ``mcp_service`` is the ``AidaMCPService`` instance used by handlers. It
+    ``mcp_service`` is the ``NemesisMCPService`` instance used by handlers. It
     must already be constructed; callers are responsible for calling
     ``await mcp_service.initialize()`` before serving traffic.
     """

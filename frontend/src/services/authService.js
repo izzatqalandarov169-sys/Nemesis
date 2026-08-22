@@ -1,10 +1,10 @@
-/**
+﻿/**
  * Authentication API service
  */
 import apiClient from './api';
 
-const TOKEN_KEY = 'aida_token';
-const USER_KEY = 'aida_user';
+const TOKEN_KEY = 'nemesis_token';
+const USER_KEY = 'nemesis_user';
 
 export function getStoredToken() {
   return localStorage.getItem(TOKEN_KEY);

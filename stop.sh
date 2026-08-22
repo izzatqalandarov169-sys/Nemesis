@@ -1,8 +1,8 @@
-#!/usr/bin/env bash
+﻿#!/usr/bin/env bash
 # ==============================================================================
-# AIDA - Stop Services
+# NEMESIS - Stop Services
 # ==============================================================================
-# Stops all AIDA containers. Data is preserved.
+# Stops all NEMESIS containers. Data is preserved.
 # ==============================================================================
 
 set -euo pipefail
@@ -14,10 +14,10 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-log()     { echo -e "${GREEN}[✓]${NC} $*"; }
+log()     { echo -e "${GREEN}[âœ“]${NC} $*"; }
 warn()    { echo -e "${YELLOW}[!]${NC} $*"; }
-error()   { echo -e "${RED}[✗]${NC} $*"; }
-section() { echo -e "\n${BLUE}══════════════════════════════════════${NC}\n${BLUE}  $*${NC}\n${BLUE}══════════════════════════════════════${NC}"; }
+error()   { echo -e "${RED}[âœ—]${NC} $*"; }
+section() { echo -e "\n${BLUE}â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•${NC}\n${BLUE}  $*${NC}\n${BLUE}â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•${NC}"; }
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
@@ -31,7 +31,7 @@ else
     COMPOSE_CMD="docker compose"
 fi
 
-section "AIDA - Stopping Services"
+section "NEMESIS - Stopping Services"
 
 # Stop host helper
 if pkill -f "tools/helper.py" 2>/dev/null; then
@@ -45,9 +45,9 @@ STOPPED=$($COMPOSE_CMD ps --status exited -q 2>/dev/null | wc -l | tr -d ' ')
 TOTAL=$((RUNNING + STOPPED))
 
 if [[ "$TOTAL" -eq 0 ]]; then
-    warn "No AIDA containers found"
+    warn "No NEMESIS containers found"
     echo ""
-    echo "To start AIDA: ./start.sh"
+    echo "To start NEMESIS: ./start.sh"
     exit 0
 fi
 
@@ -58,29 +58,29 @@ if [[ "$RUNNING" -eq 0 ]]; then
 fi
 
 # Detect active mode by container name (works for running AND stopped):
-#   aida_caddy exists           → TLS prod
-#   aida_frontend bound to 31337 → local prod
-#   otherwise                    → dev
+#   nemesis_caddy exists           â†’ TLS prod
+#   nemesis_frontend bound to 31337 â†’ local prod
+#   otherwise                    â†’ dev
 ALL_NAMES=$(docker ps -a --format "{{.Names}}" 2>/dev/null || true)
 
-if echo "$ALL_NAMES" | grep -q "^aida_caddy$"; then
-    log "TLS prod stack detected — stopping with prod + tls compose files..."
+if echo "$ALL_NAMES" | grep -q "^nemesis_caddy$"; then
+    log "TLS prod stack detected â€” stopping with prod + tls compose files..."
     STOP_FILES="-f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.tls.yml"
-elif echo "$ALL_NAMES" | grep -q "^aida_frontend$" \
-     && docker inspect aida_frontend --format '{{json .HostConfig.PortBindings}}' 2>/dev/null | grep -q "31337"; then
-    log "Local prod stack detected — stopping with prod compose files..."
+elif echo "$ALL_NAMES" | grep -q "^nemesis_frontend$" \
+     && docker inspect nemesis_frontend --format '{{json .HostConfig.PortBindings}}' 2>/dev/null | grep -q "31337"; then
+    log "Local prod stack detected â€” stopping with prod compose files..."
     STOP_FILES="-f docker-compose.yml -f docker-compose.prod.yml"
 else
     STOP_FILES=""
 fi
 
 log "Stopping $RUNNING container(s)..."
-# Use 'stop' (not 'down') — containers are kept, volumes untouched, data safe
+# Use 'stop' (not 'down') â€” containers are kept, volumes untouched, data safe
 $COMPOSE_CMD $STOP_FILES stop
 
 # Verify
 echo ""
-log "All containers stopped — data preserved"
+log "All containers stopped â€” data preserved"
 $COMPOSE_CMD $STOP_FILES ps --format "table {{.Name}}\t{{.Status}}"
 echo ""
 log "To restart:      ./start.sh"

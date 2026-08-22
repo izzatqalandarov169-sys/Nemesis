@@ -70,7 +70,7 @@ const AssessmentCardActions = ({
       const safeName = assessment.name.replace(/[^a-zA-Z0-9]/g, '_');
       const a = document.createElement('a');
       a.href = url;
-      a.download = `AIDA_Report_${safeName}.pdf`;
+      a.download = `NEMESIS_Report_${safeName}.pdf`;
       document.body.appendChild(a);
       a.click();
       a.remove();

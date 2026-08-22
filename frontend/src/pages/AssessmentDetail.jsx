@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+﻿import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Target, Server, Shield, ArrowLeft, AlertTriangle, Info, Eye, TrendingUp, Filter, FolderOpen, RefreshCw, Download, Send, Play, Copy, Check, Plus } from '../components/icons';
 import apiClient from '../services/api';
@@ -21,7 +21,7 @@ import { getSeverityBarClass, SEVERITY_ORDER } from '../utils/severity';
 // Group order: findings first, then observations, then info
 const CARD_TYPE_ORDER = { finding: 3, observation: 2, info: 1 };
 
-// Sort: card type group → CVSS score desc → severity → creation date desc
+// Sort: card type group â†’ CVSS score desc â†’ severity â†’ creation date desc
 const sortByScore = (a, b) => {
   const aType = CARD_TYPE_ORDER[a.card_type] || 0;
   const bType = CARD_TYPE_ORDER[b.card_type] || 0;
@@ -192,7 +192,7 @@ const AssessmentDetail = () => {
       const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `AIDA_Report_${assessment.name.replace(/[^a-zA-Z0-9 _-]/g, '_')}.pdf`);
+      link.setAttribute('download', `NEMESIS_Report_${assessment.name.replace(/[^a-zA-Z0-9 _-]/g, '_')}.pdf`);
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -372,7 +372,7 @@ const AssessmentDetail = () => {
               <span>{assessment.client_name || 'No client'}</span>
               {assessment.environment && assessment.environment !== 'non_specifie' && (
                 <>
-                  <span>•</span>
+                  <span>â€¢</span>
                   <span className={`font-medium ${assessment.environment === 'production'
                     ? 'text-orange-600 dark:text-orange-400'
                     : 'text-green-600 dark:text-green-400'
@@ -381,11 +381,11 @@ const AssessmentDetail = () => {
                   </span>
                 </>
               )}
-              <span>•</span>
+              <span>â€¢</span>
               <span>{assessment.status}</span>
               {assessment.container_name && (
                 <>
-                  <span>•</span>
+                  <span>â€¢</span>
                   <button
                     onClick={() => setShowChangeContainerModal(true)}
                     className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors font-mono text-xs font-medium"
@@ -458,12 +458,12 @@ const AssessmentDetail = () => {
           <div className="relative" ref={startAIRef}>
             <button
               onClick={() => {
-                if (!localStorage.getItem('aida_mcp_notice_seen')) {
+                if (!localStorage.getItem('nemesis_mcp_notice_seen')) {
                   setShowMcpNotice(true);
                   return;
                 }
                 // Clear any stale result from a previous open so the popup
-                // always starts fresh — otherwise reopening after a success
+                // always starts fresh â€” otherwise reopening after a success
                 // shows the old success banner with no launch button.
                 if (!showStartAI) setLaunchResult(null);
                 setShowStartAI(!showStartAI);
@@ -479,7 +479,7 @@ const AssessmentDetail = () => {
                 <h4 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-3">Launch AI Scan</h4>
 
                 {launchResult?.type === 'success' ? (
-                  /* Success state — only show confirmation */
+                  /* Success state â€” only show confirmation */
                   <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 text-sm">
                     <Check className="w-4 h-4 flex-shrink-0" />
                     <span>Terminal opened with AI scan</span>
@@ -523,10 +523,10 @@ const AssessmentDetail = () => {
                     <div className="mt-3 pt-3 border-t border-neutral-200 dark:border-neutral-700">
                       <p className="text-[10px] text-neutral-500 dark:text-neutral-400 mb-1.5">Or run manually:</p>
                       <div className="relative">
-                        <pre className="text-[11px] font-mono bg-neutral-900 text-green-400 px-3 py-2 rounded-lg overflow-x-auto">python3 aida.py -a "{assessment.name}"</pre>
+                        <pre className="text-[11px] font-mono bg-neutral-900 text-green-400 px-3 py-2 rounded-lg overflow-x-auto">python3 nemesis.py -a "{assessment.name}"</pre>
                         <button
                           onClick={() => {
-                            navigator.clipboard.writeText(`python3 aida.py -a "${assessment.name}"`);
+                            navigator.clipboard.writeText(`python3 nemesis.py -a "${assessment.name}"`);
                             setCopiedCmd(true);
                             setTimeout(() => setCopiedCmd(false), 2000);
                           }}
@@ -609,7 +609,7 @@ const AssessmentDetail = () => {
         </div>
       </div>
 
-      {/* Assessment Settings - Déplacé en haut */}
+      {/* Assessment Settings - DÃ©placÃ© en haut */}
       <div className="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg">
         <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-700 bg-gray-50 dark:bg-neutral-900">
           <h2 className="text-sm font-semibold text-gray-800 dark:text-neutral-100">Assessment Settings</h2>
@@ -891,7 +891,7 @@ const AssessmentDetail = () => {
                 externalTrigger={addCardTrigger}
               />
 
-              {/* Divider — Observations & Info */}
+              {/* Divider â€” Observations & Info */}
               {(stats.observations + stats.infos) > 0 && (
                 <>
                   <div className="relative my-1">
@@ -985,14 +985,14 @@ const AssessmentDetail = () => {
 
               <div className="space-y-3 text-sm text-neutral-700 dark:text-neutral-300">
                 <p>
-                  To connect an AI client (Claude Desktop, Cursor, Gemini, etc.) via MCP, you need to run <code className="font-mono text-xs bg-neutral-100 dark:bg-neutral-700 px-1.5 py-0.5 rounded">aida.py</code> once from your terminal first.
+                  To connect an AI client (Claude Desktop, Cursor, Gemini, etc.) via MCP, you need to run <code className="font-mono text-xs bg-neutral-100 dark:bg-neutral-700 px-1.5 py-0.5 rounded">nemesis.py</code> once from your terminal first.
                 </p>
-                <p>This authenticates against the backend and caches a long-lived API key — every subsequent launch is silent.</p>
+                <p>This authenticates against the backend and caches a long-lived API key â€” every subsequent launch is silent.</p>
                 <div className="bg-neutral-900 rounded-lg px-4 py-3 font-mono text-xs text-green-400">
-                  python3 aida.py
+                  python3 nemesis.py
                 </div>
                 <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                  Using <strong className="text-neutral-600 dark:text-neutral-300">Claude Code or Kimi CLI</strong>? The launcher handles everything automatically — no extra step needed.
+                  Using <strong className="text-neutral-600 dark:text-neutral-300">Claude Code or Kimi CLI</strong>? The launcher handles everything automatically â€” no extra step needed.
                 </p>
               </div>
             </div>
@@ -1006,7 +1006,7 @@ const AssessmentDetail = () => {
               </button>
               <button
                 onClick={() => {
-                  localStorage.setItem('aida_mcp_notice_seen', '1');
+                  localStorage.setItem('nemesis_mcp_notice_seen', '1');
                   setShowMcpNotice(false);
                   setLaunchResult(null);
                   setShowStartAI(true);

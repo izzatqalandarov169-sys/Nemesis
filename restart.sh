@@ -1,6 +1,6 @@
-#!/usr/bin/env bash
+﻿#!/usr/bin/env bash
 # ==============================================================================
-# AIDA - Restart Services
+# NEMESIS - Restart Services
 # ==============================================================================
 # Restarts all containers and waits for them to be healthy.
 # ==============================================================================
@@ -14,10 +14,10 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m'
 
-log()     { echo -e "${GREEN}[✓]${NC} $*"; }
+log()     { echo -e "${GREEN}[âœ“]${NC} $*"; }
 warn()    { echo -e "${YELLOW}[!]${NC} $*"; }
-error()   { echo -e "${RED}[✗]${NC} $*"; }
-section() { echo -e "\n${BLUE}══════════════════════════════════════${NC}\n${BLUE}  $*${NC}\n${BLUE}══════════════════════════════════════${NC}"; }
+error()   { echo -e "${RED}[âœ—]${NC} $*"; }
+section() { echo -e "\n${BLUE}â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•${NC}\n${BLUE}  $*${NC}\n${BLUE}â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•${NC}"; }
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
@@ -31,20 +31,20 @@ else
     COMPOSE_CMD="docker compose"
 fi
 
-section "AIDA - Restarting Services"
+section "NEMESIS - Restarting Services"
 
 # Detect active mode. Stopped containers don't expose .Ports, so we use
 # container names + inspect for port bindings instead.
-#   aida_caddy exists  → TLS prod
-#   aida_frontend has 31337 binding → local prod
-#   otherwise → dev
+#   nemesis_caddy exists  â†’ TLS prod
+#   nemesis_frontend has 31337 binding â†’ local prod
+#   otherwise â†’ dev
 ALL_NAMES=$(docker ps -a --format "{{.Names}}" 2>/dev/null || true)
 
-if echo "$ALL_NAMES" | grep -q "^aida_caddy$"; then
+if echo "$ALL_NAMES" | grep -q "^nemesis_caddy$"; then
     COMPOSE_FILES="-f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.tls.yml"
     MODE_LABEL="TLS prod"
-elif echo "$ALL_NAMES" | grep -q "^aida_frontend$" \
-     && docker inspect aida_frontend --format '{{json .HostConfig.PortBindings}}' 2>/dev/null | grep -q "31337"; then
+elif echo "$ALL_NAMES" | grep -q "^nemesis_frontend$" \
+     && docker inspect nemesis_frontend --format '{{json .HostConfig.PortBindings}}' 2>/dev/null | grep -q "31337"; then
     COMPOSE_FILES="-f docker-compose.yml -f docker-compose.prod.yml"
     MODE_LABEL="Local prod"
 else
@@ -59,9 +59,9 @@ STOPPED=$($COMPOSE ps --status exited -q 2>/dev/null | wc -l | tr -d ' ')
 TOTAL=$((RUNNING + STOPPED))
 
 if [[ "$TOTAL" -eq 0 ]]; then
-    warn "No AIDA containers found"
+    warn "No NEMESIS containers found"
     echo ""
-    echo "Use ./start.sh to start AIDA for the first time"
+    echo "Use ./start.sh to start NEMESIS for the first time"
     exit 1
 fi
 
@@ -98,7 +98,7 @@ wait_for_service() {
     echo -e "${GREEN}Ready${NC}"
 }
 
-wait_for_service "PostgreSQL" "$COMPOSE exec -T postgres pg_isready -U aida" 30
+wait_for_service "PostgreSQL" "$COMPOSE exec -T postgres pg_isready -U nemesis" 30
 wait_for_service "Backend"    "curl -sf http://localhost:8000/health"          60
 
 # Frontend check: depends on the mode detected above
@@ -118,7 +118,7 @@ case "$MODE_LABEL" in
 esac
 
 # Success
-section "AIDA Restarted"
+section "NEMESIS Restarted"
 
 echo ""
 $COMPOSE ps --format "table {{.Name}}\t{{.Status}}"
