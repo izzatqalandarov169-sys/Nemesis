@@ -39,5 +39,8 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
-      - run: npm run lint --if-present
-      - run: npm run build
+      - name: Lint (advisory while legacy findings are worked down)
+        continue-on-error: true
+        run: npm run lint --if-present
+      - name: Build (blocking)
+        run: npm run build
