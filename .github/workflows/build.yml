@@ -1,0 +1,38 @@
+name: Build Nemesis
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  docker-build:
+    name: Build Docker images
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Prepare backend environment
+        run: cp backend/.env.example backend/.env
+
+      - name: Validate Compose configuration
+        run: docker compose -f docker-compose.yml config --quiet
+
+      - name: Build all Nemesis images
+        run: docker compose -f docker-compose.yml build --pull
+
+      - name: Show built images
+        run: docker image ls --format 'table {{.Repository}}\t{{.Tag}}\t{{.Size}}' | grep -E 'nemesis|REPOSITORY' || true
+
+      - name: Cleanup test environment
+        if: always()
+        run: rm -f backend/.env
