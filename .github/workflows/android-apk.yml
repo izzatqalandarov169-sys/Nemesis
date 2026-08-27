@@ -1,0 +1,94 @@
+name: Nemesis Android APK
+
+on:
+  push:
+    branches: [master, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build web UI
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Create Android WebView wrapper
+        run: |
+          mkdir -p android/app/src/main/java/com/nemesis/app
+          mkdir -p android/app/src/main/res/values
+          mkdir -p android/app/src/main/assets
+          cp -r frontend/dist/. android/app/src/main/assets/
+          printf '%s\n' 'pluginManagement { repositories { google(); mavenCentral(); gradlePluginPortal() } }' 'dependencyResolutionManagement { repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS); repositories { google(); mavenCentral() } }' 'rootProject.name = "NemesisAndroid"' 'include ":app"' > android/settings.gradle
+          printf '%s\n' 'plugins { id "com.android.application" version "8.7.3" apply false }' > android/build.gradle
+          printf '%s\n' 'plugins { id "com.android.application" }' 'android { namespace "com.nemesis.app"; compileSdk 35; defaultConfig { applicationId "com.nemesis.app"; minSdk 23; targetSdk 35; versionCode 1; versionName "1.0" } }' > android/app/build.gradle
+          printf '%s\n' '<resources><style name="AppTheme" parent="android:style/Theme.Material.Light.NoActionBar" /></resources>' > android/app/src/main/res/values/styles.xml
+          cat > android/app/src/main/AndroidManifest.xml <<'EOF'
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+            <uses-permission android:name="android.permission.INTERNET" />
+            <application android:theme="@style/AppTheme" android:label="Nemesis" android:usesCleartextTraffic="true">
+              <activity android:name=".MainActivity" android:exported="true">
+                <intent-filter>
+                  <action android:name="android.intent.action.MAIN" />
+                  <category android:name="android.intent.category.LAUNCHER" />
+                </intent-filter>
+              </activity>
+            </application>
+          </manifest>
+          EOF
+          cat > android/app/src/main/java/com/nemesis/app/MainActivity.java <<'EOF'
+          package com.nemesis.app;
+          import android.app.Activity;
+          import android.os.Bundle;
+          import android.webkit.WebSettings;
+          import android.webkit.WebView;
+          import android.webkit.WebViewClient;
+          public class MainActivity extends Activity {
+            @Override public void onCreate(Bundle state) {
+              super.onCreate(state);
+              WebView web = new WebView(this);
+              web.setWebViewClient(new WebViewClient());
+              WebSettings s = web.getSettings();
+              s.setJavaScriptEnabled(true);
+              s.setDomStorageEnabled(true);
+              web.loadUrl("file:///android_asset/index.html");
+              setContentView(web);
+            }
+          }
+          EOF
+
+      - name: Install Gradle
+        run: |
+          curl -fsSL https://services.gradle.org/distributions/gradle-8.9-bin.zip -o /tmp/gradle.zip
+          unzip -q /tmp/gradle.zip -d /opt
+          echo /opt/gradle-8.9/bin >> "$GITHUB_PATH"
+
+      - name: Build APK
+        working-directory: android
+        run: gradle --no-daemon assembleDebug
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Nemesis-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
